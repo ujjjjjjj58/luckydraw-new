@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>尾牙抽獎</title>
+
+<style>
+  body {
+    font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+    text-align: center;
+    background: #111;
+    color: #fff;
+    padding-top: 50px;
+  }
+
+  h1 {
+    font-size: 42px;
+    margin-bottom: 30px;
+  }
+
+  #winner {
+    font-size: 56px;
+    margin: 40px 0;
+    color: #ffd700;
+    min-height: 80px;
+  }
+
+  button {
+    font-size: 26px;
+    padding: 22px 45px;
+    margin: 15px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .normal { background: #3498db; color: white; }
+  .bonus  { background: #2ecc71; color: white; }
+  .grand  {
+    background: #e74c3c;
+    color: white;
+    font-size: 30px;
+    padding: 28px 60px;
+  }
+
+  #resetBtn {
+    margin-top: 120px;
+    font-size: 20px;
+    padding: 14px 30px;
+    background: #555;
+    color: white;
+  }
+
+  #hostPanel {
+    margin-top: 40px;
+    font-size: 12px;
+    color: #444;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>🎉 尾牙抽獎 🎉</h1>
+
+<div id="winner"></div>
+
+<button class="normal" onclick="drawNormal()">一般抽獎</button>
+
+<button class="grand" id="grandBtn" onclick="drawGrand()" style="display:none;">
+  🎁 頭獎 🎁
+</button>
+
+<button class="bonus" onclick="drawBonus()">➕ 加碼獎</button>
+
+<br>
+
+<button id="resetBtn" onclick="resetDraw()">重置</button>
+
+<!-- 主持人隱藏開關 -->
+<div id="hostPanel">
+  <input type="checkbox" id="enableGrand" onchange="toggleGrand()" />
+  system option
+</div>
+
+<!-- 音效 -->
+<audio id="drumSound" src="drumroll.mp3"></audio>
+<audio id="winSound" src="win.mp3"></audio>
+
+<script>
+  /* ===== 全部人名單（可抽一般獎） ===== */
+  const allMembers = [
+     "曾雪倩", "郭宇仁", "林綺慧", "陳韋伶", "林紫瑩", "袁宇瑄", "黃郁綾", "李貞璇", "張詠絜", "陳婷", "李國齊", "莊明春", "黃龍月", "王盈惠", "陳俐雯", "游筱柔", "賈維倫", "王信偉", "施蓉幸", "黃千凡", "林純如", "吳昇達", "林芊妤（值班）", "陳威霖（值班）", "曾鈺婷（值班）", "李孟樺", "李婉瑛", "陳惠琴", "陳曉佩", "王菀柔"
+  ];
+
+  /* ❌ 不能抽頭獎 & 加碼獎的三人 */
+  const excludeBigPrizes = [
+    "曾鈺婷（值班）",
+    "陳威霖（值班）",
+    "林芊妤（值班）"
+  ];
+
+  /* 🎯 一般獎：所有人都可，但不重複 */
+  let normalPool = [...allMembers];
+
+  /* 🎁 頭獎 / 加碼獎可抽名單（排除三人） */
+  const bigPrizePool = allMembers.filter(
+    n => !excludeBigPrizes.includes(n)
+  );
+
+  const winnerDiv = document.getElementById("winner");
+  const drum = document.getElementById("drumSound");
+  const win = document.getElementById("winSound");
+
+  function playDraw(callback) {
+    winnerDiv.textContent = "🥁 抽獎中…";
+    drum.currentTime = 0;
+    drum.play();
+
+    setTimeout(() => {
+      callback();
+      win.currentTime = 0;
+      win.play();
+    }, 3000);
+  }
+
+  function randomFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  /* ===== 一般獎：不重複 ===== */
+  function drawNormal() {
+    if (normalPool.length === 0) {
+      winnerDiv.textContent = "⚠️ 一般獎已全部抽完";
+      return;
+    }
+
+    playDraw(() => {
+      const w = randomFrom(normalPool);
+      winnerDiv.textContent = "🎉 一般獎：" + w;
+      normalPool = normalPool.filter(n => n !== w);
+    });
+  }
+
+  /* ===== 加碼獎：可重複（排除三人） ===== */
+  function drawBonus() {
+    playDraw(() => {
+      const w = randomFrom(bigPrizePool);
+      winnerDiv.textContent = "➕ 加碼獎：" + w;
+    });
+  }
+
+  /* ===== 頭獎：可重複（排除三人、隱藏） ===== */
+  function drawGrand() {
+    playDraw(() => {
+      const w = randomFrom(bigPrizePool);
+      winnerDiv.textContent = "🏆 頭獎：" + w;
+    });
+  }
+
+  function resetDraw() {
+    winnerDiv.textContent = "";
+  }
+
+  function toggleGrand() {
+    const grandBtn = document.getElementById("grandBtn");
+    const checkbox = document.getElementById("enableGrand");
+    grandBtn.style.display = checkbox.checked ? "inline-block" : "none";
+  }
+</script>
+
+</body>
+</html>
